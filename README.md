@@ -12,11 +12,10 @@ https://dxlib.xsrv.jp/dxdload.html
 
 # [フォルダ構成]
 2016209_宮本隆成_ソースファイル  
-├─DxLib  
 └─自主制作作品  
-    ├─1-ForestGuardian            [言語・ライブラリ] C++ DXライブラリ      [ツール]Visual Studio2019  
-    ├─2-SchlachtGuerre            [言語・ライブラリ] C# Unity              [ツール]Visual Studio2019  
-    ├─3-Defele                    [言語・ライブラリ] C++ DXライブラリ      [ツール]Visual Studio2019 Tiled  
-    └─4-PirateTactics             [言語・ライブラリ] JavaScript enchant.js [ツール]Sublime Text   
+&nbsp; ├─1-ForestGuardian            [言語・ライブラリ] C++ DXライブラリ      [ツール]Visual Studio2019  
+&ensp;├─2-SchlachtGuerre            [言語・ライブラリ] C# Unity              [ツール]Visual Studio2019  
+&ensp;├─3-Defele                    [言語・ライブラリ] C++ DXライブラリ      [ツール]Visual Studio2019 Tiled  
+&nbsp; └─4-PirateTactics             [言語・ライブラリ] JavaScript enchant.js [ツール]Sublime Text   
 
 その他、バージョン管理としてGit、スケジュール管理としてRedmineを使用しています。  
