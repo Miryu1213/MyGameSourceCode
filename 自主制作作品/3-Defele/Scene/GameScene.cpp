@@ -678,7 +678,17 @@ void GameScene::DrawRouteChange(void)
 		blockPos.x_ = curPos.x_ / BlockSize * BlockSize;
 		blockPos.y_ = curPos.y_ / BlockSize * BlockSize;
 
-		//選択ルートの描画
+		//ルート全体の取得
+		//auto routemap = lpRouteCtl.GetRouteAll(ArmyType::ALLY);
+		//lpRouteCtl.GetRoute
+
+			//ルート全体の描画
+			//for (auto& route : routemap)
+			//{
+			//	//線を描画
+			//	lpRouteCtl.DrawRoute(route.second, Vector2{ BlockSize , BlockSize }, SceneMng::Blue,route.first);
+			//}
+			//選択ルートの描画
 		lpRouteCtl.DrawRoute(lpRouteCtl.GetCurRoute(), Vector2{ BlockSize , BlockSize }, SceneMng::Blue, lpRouteCtl.currentPlantOrder_);
 
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 178);

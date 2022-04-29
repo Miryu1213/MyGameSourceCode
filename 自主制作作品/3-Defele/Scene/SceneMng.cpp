@@ -149,7 +149,7 @@ bool SceneMng::SysInit(void)
 	}
 
 	//ÉXÉgÉäÅ[ÉÄçƒê∂
-	SetCreateSoundDataType(DX_SOUNDDATATYPE_MEMNOPRESS_PLUS);
+	//SetCreateSoundDataType(DX_SOUNDDATATYPE_MEMNOPRESS_PLUS);
 
 #ifdef _DEBUG
 	_dbgSetup(Def_View_Area_X, Def_View_Area_Y, 255);

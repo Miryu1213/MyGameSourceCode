@@ -44,7 +44,6 @@ constexpr int BURN_OFFSET_Y = 150;
 
 constexpr int CREDIT_MAX_SIZE = 298;
 constexpr double CREDIT_SUM_TIME = 0.8;
-//constexpr double CREDIT_SUM_CLOSE_TIME = 0.7;
 
 constexpr int CANCEL_SIZE_X = 66;
 constexpr int CANCEL_SIZE_Y = 66;
@@ -161,7 +160,29 @@ bool TitleScene::Init(void)
 		lpImageMng.SetColorAndID(0x0000ff, TOCOLOR::RED, "Resource/image/Plant/Flag.png", "EnemyFlag", { FLAG_SIZE_X,FLAG_SIZE_Y }, { FLAG_DIVCNT_X,FLAG_DIVCNT_Y });
 	}
 
+	//音データは先に読み込む
 	lpAudioMng.GetID("Resource/Audio/BGM/title.mp3", "title");
+
+	lpAudioMng.GetID("Resource/Audio/BGM/select.mp3", "select");
+
+	lpAudioMng.GetID("Resource/Audio/SE/Unit/KnightAtk.mp3", "KnightAtk");
+	lpAudioMng.GetID("Resource/Audio/SE/Unit/ArcherAtk.mp3", "ArcherAtk");
+	lpAudioMng.GetID("Resource/Audio/SE/Unit/WarriorAtk.mp3", "WarriorAtk");
+	lpAudioMng.GetID("Resource/Audio/SE/Unit/AttackedCore.mp3", "AttackedCore");
+	lpAudioMng.GetID("Resource/Audio/SE/Unit/AttackedPlant.mp3", "AttackedPlant");
+	lpAudioMng.GetID("Resource/Audio/SE/Unit/BrokenCore.mp3", "BrokenCore");
+	lpAudioMng.GetID("Resource/Audio/SE/Unit/BrokenPlant.mp3", "BrokenPlant");
+	lpAudioMng.GetID("Resource/Audio/SE/Unit/RepelArrow.mp3", "RepelArrow");
+	lpAudioMng.GetID("Resource/Audio/SE/DeployPlant.mp3", "DeployPlant");
+
+	lpAudioMng.GetID("Resource/Audio/SE/Explosion.mp3", "Explosion");
+	lpAudioMng.GetID("Resource/Audio/SE/Convergence.mp3", "Convergence");
+
+	lpAudioMng.GetID("Resource/Audio/SE/drum0.mp3", "Drum0");
+	lpAudioMng.GetID("Resource/Audio/SE/drum1.mp3", "Drum1");
+
+	lpAudioMng.GetID("Resource/Audio/SE/ClickStar.mp3", "ClickStar");
+	lpAudioMng.GetID("Resource/Audio/SE/EndLoading.mp3", "EndLoading");
 
 	//音楽を作成してた場合止める
 	lpAudioMng.StopMusicAll();
@@ -307,7 +328,7 @@ void TitleScene::DrawFirstImage(void)
 		return;
 	}
 
-	int alpha = min((time_ / (FIRST_IMAGE_TIME / 2)) * 255, 255);
+	int alpha = min(static_cast<int>((time_ / (FIRST_IMAGE_TIME / 2)) * 255), 255);
 
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
 	DrawExtendGraph(0, 0, lpSceneMng.GetViewArea().x_, lpSceneMng.GetViewArea().y_, lpImageMng.GetID("map1")[0], true);
@@ -327,7 +348,7 @@ void TitleScene::DrawFadeImage(void)
 	{
 		return;
 	}
-	int alpha = static_cast<int>(min((time_ / (FADE_TIME * 2 / 3)) * 255, 255));
+	int alpha = min(static_cast<int>((time_ / (FADE_TIME * 2 / 3)) * 255), 255);
 
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255 - alpha);
 	DrawExtendGraph(0, 0, lpSceneMng.GetViewArea().x_, lpSceneMng.GetViewArea().y_, lpImageMng.GetID("map1")[0], true);
@@ -353,7 +374,7 @@ void TitleScene::DrawBurn(void)
 
 	DrawExtendGraph(0, 0, lpSceneMng.GetViewArea().x_, lpSceneMng.GetViewArea().y_, lpImageMng.GetID("Title1")[0], true);
 	
-	int alpha = static_cast<int>(min((time_ / (BURN_TIME * 2 / 3)) * 220, 220));
+	int alpha = min(static_cast<int>((time_ / (BURN_TIME * 2 / 3)) * 220), 220);
 	
 	SetDrawBlendMode(DX_BLENDMODE_ADD, alpha);
 	int id = static_cast<int>(fmod((burnAnimTime_ / BURN_ONE_FRAME_TIME), BURN_SUM_FRAME));
@@ -394,7 +415,7 @@ void TitleScene::DrawFadeUI(void)
 	burnAnimTime_ += lpSceneMng.GetDeltaTime();
 	
 	//ボタン
-	int alpha = min((time_ / UI_FADE_TIME) * 255, 255);
+	int alpha = min(static_cast<int>((time_ / UI_FADE_TIME) * 255), 255);
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
 
 	DrawExtendGraph(buttonPos_.x_, buttonPos_.y_,
@@ -410,14 +431,14 @@ void TitleScene::DrawFadeUI(void)
 		lpImageMng.GetID("EndUI")[0], true);
 
 	int distance = buttonDefPos_.y_ - (lpSceneMng.GetViewArea().y_ - BUTTON_OFFSET_Y);
-	buttonPos_.y_ = buttonDefPos_.y_ - min((time_ / (UI_FADE_TIME / 2)) * distance, distance);
+	buttonPos_.y_ = buttonDefPos_.y_ - min(static_cast<int>((time_ / (UI_FADE_TIME / 2)) * distance), distance);
 
 	//ロゴ
-	alpha = static_cast<int>(min((time_ / (UI_FADE_TIME * 2 / 3)) * 255, 255));
+	alpha = min(static_cast<int>((time_ / (UI_FADE_TIME * 2 / 3)) * 255), 255);
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
 	DrawGraph(logoPos_.x_, logoPos_.y_, lpImageMng.GetID("logo")[0], true);
 	int logoDistance = LOGO_POS_Y - logoDefPos_.y_;
-	logoPos_.y_ = logoDefPos_.y_ + static_cast<int>(min((time_ / (UI_FADE_TIME / 2)) * logoDistance, logoDistance));
+	logoPos_.y_ = logoDefPos_.y_ + min(static_cast<int>((time_ / (UI_FADE_TIME / 2)) * logoDistance), logoDistance);
 
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 

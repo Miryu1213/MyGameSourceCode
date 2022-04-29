@@ -270,9 +270,8 @@ void Signal::Draw(bool isTutorial)
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 80);
 	}
 
-	DrawRotaGraph(static_cast<int>(pos_.x_), static_cast<int>(pos_.y_), extRate_, angleRad_, gh_, true);
-	//DrawTriangleAA(poses[0].x_, poses[0].y_, poses[1].x_, poses[1].y_, poses[2].x_, poses[2].y_, color_, true);
-
+	DrawRotaGraphF(pos_.x_, pos_.y_, extRate_, angleRad_, gh_, true);
+	
 	//ƒ¿’l
 	int alpha = 255;
 	if (isTutorial)

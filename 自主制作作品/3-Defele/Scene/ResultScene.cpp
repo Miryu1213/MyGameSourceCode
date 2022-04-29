@@ -150,7 +150,7 @@ void ResultScene::Draw(void)
 		0, lpSceneMng.GetViewArea().y_, lpImageMng.GetID(bgKeyName)[0], true);
 
 	//•¶Žš‚Ì•`‰æ
-	int alpha = static_cast<int>(min((textTime_ / TEXT_TOTAL_TIME) * 255, 255));
+	int alpha = min(static_cast<int>((textTime_ / TEXT_TOTAL_TIME) * 255), 255);
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
 	DrawGraph(textPos_.x_, textPos_.y_, lpImageMng.GetID(textKeyName)[0], true);
 

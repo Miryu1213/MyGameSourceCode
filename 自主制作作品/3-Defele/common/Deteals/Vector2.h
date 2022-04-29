@@ -230,7 +230,7 @@ bool Vector2Template<T>::operator>=(const Vector2Template<T>& vec) const
 template<class T>
 inline float Vector2Template<T>::Magnitude(void) const
 {
-	return hypotf(x_, y_);
+	return hypotf(static_cast<float>(x_), static_cast<float>(y_));
 }
 
 template<class T>
@@ -251,7 +251,7 @@ template<class T>
 inline Vector2Template<T> Vector2Template<T>::Normalized(void)
 {
 	float mag = Magnitude();
-	return Vector2Template<T>(x_ / mag, y_ / mag);
+	return Vector2Template<T>(static_cast<T>( x_ / mag), static_cast<T>(y_ / mag));
 }
 
 template<class T>

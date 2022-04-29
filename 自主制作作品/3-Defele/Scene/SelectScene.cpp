@@ -160,8 +160,6 @@ SelectScene::SelectScene()
 SelectScene::~SelectScene()
 {
 	lpImageMng.DeleteID("0");
-	//lpImageMng.DeleteID("map0");
-	//lpImageMng.DeleteID("map1");
 	lpImageMng.DeleteID("KnightStatus");
 	lpImageMng.DeleteID("ArcherStatus");
 	lpImageMng.DeleteID("WarriorStatus");
@@ -173,24 +171,42 @@ SelectScene::~SelectScene()
 	lpImageMng.DeleteID("ToTitle");
 	lpImageMng.DeleteID("ToTitleText");
 
-	lpAudioMng.DeleteID("select");
+	if (!toTitleFlag_)
+	{
+		lpAudioMng.DeleteID("select");
+	}
 }
 
 bool SelectScene::Init(void)
 {
 	//メンバ初期化
-	stgSelectFlag_ = false;
+	curScreen_ = CURSCREEN::START;
+
+	//Updateの登録
+	update_[CURSCREEN::START] = std::bind(&SelectScene::UpdateStartScreen, this);
+	update_[CURSCREEN::STARTEND] = std::bind(&SelectScene::UpdateStartEndScreen, this);
+	update_[CURSCREEN::STAGESELECT] = std::bind(&SelectScene::UpdateStgSelect, this);
+	update_[CURSCREEN::MAP] = std::bind(&SelectScene::UpdateDetailedMap, this);
+	update_[CURSCREEN::MAPMAGNI] = std::bind(&SelectScene::UpdateMagniMap, this);
+	update_[CURSCREEN::MAPSHRINK] = std::bind(&SelectScene::UpdateShrinkMap, this);
+	update_[CURSCREEN::CONFIRM] = std::bind(&SelectScene::UpdateConfirm, this);
+
+	//Drawの登録
+	draw_[CURSCREEN::START] = std::bind(&SelectScene::DrawStartScreen, this);
+	draw_[CURSCREEN::STARTEND] = std::bind(&SelectScene::DrawStartEndScreen, this);
+	draw_[CURSCREEN::STAGESELECT] = std::bind(&SelectScene::DrawStgSelect, this);
+	draw_[CURSCREEN::MAP] = std::bind(&SelectScene::DrawDetailedMap, this);
+	draw_[CURSCREEN::MAPMAGNI] = std::bind(&SelectScene::DrawMagniMap, this);
+	draw_[CURSCREEN::MAPSHRINK] = std::bind(&SelectScene::DrawShrinkMap, this);
+	draw_[CURSCREEN::CONFIRM] = std::bind(&SelectScene::DrawConfirm, this);
+
 	toTitleFlag_ = false;
-	moveEndFlag_ = false;
-	defScrEndFlag_ = false;
-	mapMagniUpFlag_ = false;
-	mapMagniDownFlag_ = false;
+	toNextSceneFlag_ = false;
 	mapMagniTime_ = 0.0;
-	comScrFlag_ = false;
-	comEndFlag_ = false;
 	backGroundGh_ = -1;
 	plantSum_ = 0;
 	animTime_ = 0.0;
+
 	//アニメーションセット
 	SetUnitActiveID();
 
@@ -200,25 +216,25 @@ bool SelectScene::Init(void)
 	//画像のロード
 	LoadImageAll();
 
-	defBtnList_.push_back(std::make_unique<Box>(Vector2(0, MAP_SELECT_POS_Y),
+	startBtnList_.push_back(std::make_unique<Box>(Vector2(0, MAP_SELECT_POS_Y),
 		Vector2(MAP_SELECT_SIZE_X, MAP_SELECT_SIZE_Y),
 		[&] {
-			stgSelectFlag_ = true;
+			curScreen_ = CURSCREEN::STARTEND;
 			return false; },
 		MouseInputID::LEFT));
-	defBtnList_.back()->SetModelID(lpImageMng.GetID("MapSelectFrame")[0]);
+	startBtnList_.back()->SetModelID(lpImageMng.GetID("MapSelectFrame")[0]);
 
-	defBtnList_.push_back(std::make_unique<Box>(Vector2(0, MAP_SELECT_POS_Y + MAP_SELECT_SIZE_Y + MAP_SELECT_INTERVAL),
+	startBtnList_.push_back(std::make_unique<Box>(Vector2(0, MAP_SELECT_POS_Y + MAP_SELECT_SIZE_Y + MAP_SELECT_INTERVAL),
 		Vector2(MAP_SELECT_SIZE_X, MAP_SELECT_SIZE_Y),
 		[&] {
 			toTitleFlag_ = true;
 			return false; },
 		MouseInputID::LEFT));
-	defBtnList_.back()->SetModelID(lpImageMng.GetID("ToTitle")[0]);
+	startBtnList_.back()->SetModelID(lpImageMng.GetID("ToTitle")[0]);
 
 	//ステージの作成
 	int stgCnt = 0;
-	defStageList_.push_back(std::make_unique<Square>(
+	stgSelectList_.push_back(std::make_unique<Square>(
 		Vector2(STAGE_POS_X, STAGE_POS_Y),
 		Vector2(STAGE_POS_X - STAGE_SLOPE_SIZE_X, STAGE_POS_Y + STAGE_SIZE_Y),
 		Vector2(STAGE_POS_X + STAGE_SIZE_X, STAGE_POS_Y),
@@ -226,14 +242,14 @@ bool SelectScene::Init(void)
 		Vector2(STAGE_SIZE_X, STAGE_SIZE_Y),
 		"Scene/tmx/map0.tmx",
 		MouseInputID::LEFT));
-	defStageList_.back()->SetModelID(lpImageMng.GetID("Stage0")[0]);
+	stgSelectList_.back()->SetModelID(lpImageMng.GetID("Stage0")[0]);
 	stgCnt++;
 	if (lpSceneMng.clearMap_.try_emplace("map0").second)
 	{
 		lpSceneMng.clearMap_["map0"] = false;
 	}
 
-	defStageList_.push_back(std::make_unique<Square>(
+	stgSelectList_.push_back(std::make_unique<Square>(
 		Vector2(STAGE_POS_X - (STAGE_SLOPE_SIZE_X)*stgCnt, STAGE_POS_Y + (STAGE_SIZE_Y + STAGE_INTERVAL_X) * stgCnt),
 		Vector2(STAGE_POS_X - STAGE_SLOPE_SIZE_X - (STAGE_SLOPE_SIZE_X)*stgCnt, STAGE_POS_Y + STAGE_SIZE_Y + (STAGE_SIZE_Y + STAGE_INTERVAL_X) * stgCnt),
 		Vector2(STAGE_POS_X + STAGE_SIZE_X - (STAGE_SLOPE_SIZE_X)*stgCnt, STAGE_POS_Y + (STAGE_SIZE_Y + STAGE_INTERVAL_X) * stgCnt),
@@ -241,14 +257,14 @@ bool SelectScene::Init(void)
 		Vector2(STAGE_SIZE_X, STAGE_SIZE_Y),
 		"Scene/tmx/map1.tmx",
 		MouseInputID::LEFT));
-	defStageList_.back()->SetModelID(lpImageMng.GetID("Stage1")[0]);
+	stgSelectList_.back()->SetModelID(lpImageMng.GetID("Stage1")[0]);
 	stgCnt++;
 	if (lpSceneMng.clearMap_.try_emplace("map1").second)
 	{
 		lpSceneMng.clearMap_["map1"] = false;
 	}
 
-	defStageList_.push_back(std::make_unique<Square>(
+	stgSelectList_.push_back(std::make_unique<Square>(
 		Vector2(STAGE_POS_X - (STAGE_SLOPE_SIZE_X)*stgCnt, STAGE_POS_Y + (STAGE_SIZE_Y + STAGE_INTERVAL_X) * stgCnt),
 		Vector2(STAGE_POS_X - STAGE_SLOPE_SIZE_X - (STAGE_SLOPE_SIZE_X)*stgCnt, STAGE_POS_Y + STAGE_SIZE_Y + (STAGE_SIZE_Y + STAGE_INTERVAL_X) * stgCnt),
 		Vector2(STAGE_POS_X + STAGE_SIZE_X - (STAGE_SLOPE_SIZE_X)*stgCnt, STAGE_POS_Y + (STAGE_SIZE_Y + STAGE_INTERVAL_X) * stgCnt),
@@ -256,14 +272,14 @@ bool SelectScene::Init(void)
 		Vector2(STAGE_SIZE_X, STAGE_SIZE_Y),
 		"Scene/tmx/map2.tmx",
 		MouseInputID::LEFT));
-	defStageList_.back()->SetModelID(lpImageMng.GetID("Stage2")[0]);
+	stgSelectList_.back()->SetModelID(lpImageMng.GetID("Stage2")[0]);
 	stgCnt++;
 	if (lpSceneMng.clearMap_.try_emplace("map2").second)
 	{
 		lpSceneMng.clearMap_["map2"] = false;
 	}
 
-	defStageList_.push_back(std::make_unique<Square>(
+	stgSelectList_.push_back(std::make_unique<Square>(
 		Vector2(STAGE_POS_X - (STAGE_SLOPE_SIZE_X)*stgCnt, STAGE_POS_Y + (STAGE_SIZE_Y + STAGE_INTERVAL_X) * stgCnt),
 		Vector2(STAGE_POS_X - STAGE_SLOPE_SIZE_X - (STAGE_SLOPE_SIZE_X)*stgCnt, STAGE_POS_Y + STAGE_SIZE_Y + (STAGE_SIZE_Y + STAGE_INTERVAL_X) * stgCnt),
 		Vector2(STAGE_POS_X + STAGE_SIZE_X - (STAGE_SLOPE_SIZE_X)*stgCnt, STAGE_POS_Y + (STAGE_SIZE_Y + STAGE_INTERVAL_X) * stgCnt),
@@ -271,7 +287,7 @@ bool SelectScene::Init(void)
 		Vector2(STAGE_SIZE_X, STAGE_SIZE_Y),
 		"Scene/tmx/map4.tmx",
 		MouseInputID::LEFT));
-	defStageList_.back()->SetModelID(lpImageMng.GetID("Stage5")[0]);
+	stgSelectList_.back()->SetModelID(lpImageMng.GetID("Stage5")[0]);
 	stgCnt++;
 	if (lpSceneMng.clearMap_.try_emplace("map4").second)
 	{
@@ -279,34 +295,38 @@ bool SelectScene::Init(void)
 	}
 
 	int cnt = 0;
-	for (const auto& stage : defStageList_)
+	for (const auto& stage : stgSelectList_)
 	{
 		stgSelectPoses_.push_back(stage->GetPos() + Vector2(MAP_SELECT_OFFSET_X + MAP_SELECT_OFFSET_INV_X * cnt, 0));
 		moveTimes_.push_back(0.0);
 		cnt++;
 	}
 
-	/*defStageList_.push_back(std::make_unique<Box>(Vector2(STAGE_POS_X + (STAGE_SIZE_X + STAGE_INTERVAL_X), STAGE_POS_Y),
-		Vector2(STAGE_SIZE_X, STAGE_SIZE_Y),
-		"Scene/tmx/map1.tmx",
-		MouseInputID::LEFT, "1"));
-	defStageList_.back()->SetModelID(lpImageMng.GetID("woodframe03")[0]);*/
-
 	//マップUI
 	mapUiList_.push_back(std::make_unique<Box>(Vector2(MAP_POS_X, MAP_POS_Y),
 		Vector2(MAP_SIZE_X, MAP_SIZE_Y),
-		std::bind(&SelectScene::MapDownUI,this),
+		[&] {
+			curScreen_ = CURSCREEN::MAPMAGNI;
+			mapMagniTime_ = MAX_MAGNI_TIME;
+			//0割り防止のため
+			mapMagniTime_ -= 0.00001;
+			return false; },
 		MouseInputID::LEFT));
 
 	mapUiList_.push_back(std::make_unique<Box>(Vector2(MAP_UI_POS_X, MAP_UI_POS_Y),
 		Vector2(MAP_UI_SIZE_X, MAP_UI_SIZE_Y),
-		std::bind(&SelectScene::CancelUI, this),
+		[&] {
+			curScreen_ = CURSCREEN::START;
+			std::fill(moveTimes_.begin(), moveTimes_.end(), 0.0);
+			return false; },
 		MouseInputID::LEFT, "戻る"));
 	mapUiList_.back()->SetModelID(lpImageMng.GetID("textbox")[0]);
 
 	mapUiList_.push_back(std::make_unique<Box>(Vector2(MAP_UI_POS_X, MAP_UI_POS_Y + MAP_UI_SIZE_Y + 4),
 		Vector2(MAP_UI_SIZE_X, MAP_UI_SIZE_Y),
-		std::bind(&SelectScene::SetoffUI, this),
+		[&] { 
+			curScreen_ = CURSCREEN::CONFIRM;
+			return true; },
 		MouseInputID::LEFT, "出撃"));
 	mapUiList_.back()->SetModelID(lpImageMng.GetID("textbox")[0]);
 
@@ -319,13 +339,17 @@ bool SelectScene::Init(void)
 	//最終確認
 	confirmUiList_.push_back(std::make_unique<Box>(Vector2(COMFIRM_UI_POS_X, COMFIRM_UI_POS_Y),
 		Vector2(COMFIRM_UI_SIZE_X, COMFIRM_UI_SIZE_Y),
-		std::bind(&SelectScene::CancelUI2, this),
+		[&] {
+			curScreen_ = CURSCREEN::MAP;
+			return false; },
 		MouseInputID::LEFT, "いいえ"));
 	confirmUiList_.back()->SetModelID(lpImageMng.GetID("woodframe04")[0]);
 
 	confirmUiList_.push_back(std::make_unique<Box>(Vector2(COMFIRM_UI_POS_X + COMFIRM_UI_SIZE_X + 4, COMFIRM_UI_POS_Y),
 		Vector2(COMFIRM_UI_SIZE_X, COMFIRM_UI_SIZE_Y),
-		std::bind(&SelectScene::GoUI, this),
+		[&] {
+			toNextSceneFlag_ = true;
+			return false; },
 		MouseInputID::LEFT, "はい"));
 	confirmUiList_.back()->SetModelID(lpImageMng.GetID("woodframe04")[0]);
 
@@ -341,7 +365,10 @@ bool SelectScene::Init(void)
 
 UniqueScene SelectScene::UpDate(UniqueScene ownScene)
 {
-	TRACE("%d\n", GetASyncLoadNum());
+	//カーソルの更新
+	lpSceneMng.cursol_->Update();
+
+	//タイトルへ
 	if (toTitleFlag_)
 	{
 		if (GetASyncLoadNum() == 0)
@@ -349,72 +376,238 @@ UniqueScene SelectScene::UpDate(UniqueScene ownScene)
 			//ロード終了時タイトルへ
 			return std::make_unique<FadeInOut>(std::move(ownScene), std::make_unique<TitleScene>(), 1.0);
 		}
-		TRACE("%d\n", GetASyncLoadNum());
-		return ownScene;
-	}
-	//カーソルの更新
-	lpSceneMng.cursol_->Update();
-
-	//マウスの値の取得
-	auto mouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::NOW);
-	auto oldmouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::OLD);
-
-	auto curPos = lpSceneMng.cursol_->GetPos();
-
-	//マップの拡大
-	if (MagniMap())
-	{
-		//バツが押されたフレームは処理しない
 		return ownScene;
 	}
 
-	if (DefMapUI())
-	{
-		//最終確認画面
-		comScrFlag_ = true;
-	}
-
-	//確認画面
-	if (ComfirmUi())
-	{
-		comEndFlag_ = true;
-	}
-
-	if (comEndFlag_)
+	//次のシーンへ
+	if (toNextSceneFlag_)
 	{
 		if (GetASyncLoadNum() == 0)
 		{
 			//シーン移行tipsシーンへ
 			return std::make_unique<FadeInOut>(std::move(ownScene), std::make_unique<TipsScene>(mapName_.c_str()), 1.0f);
 		}
-		return ownScene;
 	}
 
-	if (defScrEndFlag_)
+	update_[curScreen_]();
+
+	return ownScene;
+}
+
+void SelectScene::Draw(void)
+{
+	draw_[curScreen_]();
+
+	//カーソルの描画
+	lpSceneMng.cursol_->Draw(false);
+}
+
+void SelectScene::UpdateStartScreen(void)
+{
+	//初期画面
+	if (curScreen_ != CURSCREEN::START)
 	{
-		//マップ表示中は処理しない
-		return ownScene;
+		return;
 	}
 
-	if (!stgSelectFlag_)
+	auto curPos = lpSceneMng.cursol_->GetPos();
+	//マウスの値の取得
+	auto mouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::NOW);
+	auto oldmouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::OLD);
+
+	for (const auto& Btn : startBtnList_)
 	{
-		return ownScene;
+		if (Btn->CheckColition(lpSceneMng.cursol_->GetPos()))
+		{
+			//入力チェック
+			if (mouseInput[Btn->GetCheckId()] && !oldmouseInput[Btn->GetCheckId()])
+			{
+				Btn->GetFunction()();
+			}
+		}
+	}
+}
+
+void SelectScene::DrawStartScreen(void)
+{
+	//初期画面
+	if (curScreen_ != CURSCREEN::START)
+	{
+		return;
 	}
 
-	if (!moveEndFlag_)
+	auto curPos = lpSceneMng.cursol_->GetPos();
+	//マウスの値の取得
+	auto mouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::NOW);
+	auto oldmouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::OLD);
+
+	//通常描画
+
+	//背景描画
+	DrawModiGraph(0, 0,
+		lpSceneMng.GetViewArea().x_, 0,
+		lpSceneMng.GetViewArea().x_, lpSceneMng.GetViewArea().y_,
+		0, lpSceneMng.GetViewArea().y_, lpImageMng.GetID("Select")[0], true);
+
+	int posX[2] = { 0,0 };
+	int cnt = 0;
+	for (const auto& defBtn : startBtnList_)
 	{
-		return ownScene;
+		defBtn->Draw();
+		if (defBtn->CheckColition(lpSceneMng.cursol_->GetPos()))
+		{
+			DrawGraph(0, defBtn->GetPos().y_, lpImageMng.GetID("MapSelectFrameLight")[0], true);
+			posX[cnt] = AMO_MOVE;
+		}
+		cnt++;
 	}
+
+	DrawGraph(posX[0], MAP_SELECT_POS_Y, lpImageMng.GetID("MapSelectFrameText")[0], true);
+	DrawGraph(posX[0], MAP_SELECT_POS_Y, lpImageMng.GetID("Triangle")[0], true);
+
+	DrawGraph(posX[1], MAP_SELECT_POS_Y + MAP_SELECT_SIZE_Y + MAP_SELECT_INTERVAL, lpImageMng.GetID("ToTitleText")[0], true);
+}
+
+void SelectScene::UpdateStartEndScreen(void)
+{
+	if (curScreen_ != CURSCREEN::STARTEND)
+	{
+		return;
+	}
+
+	auto curPos = lpSceneMng.cursol_->GetPos();
+	//マウスの値の取得
+	auto mouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::NOW);
+	auto oldmouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::OLD);
+
+	for (const auto& defBtn : startBtnList_)
+	{
+		if (defBtn->CheckColition(lpSceneMng.cursol_->GetPos()))
+		{
+			//入力チェック
+			if (mouseInput[defBtn->GetCheckId()] && !oldmouseInput[defBtn->GetCheckId()])
+			{
+				defBtn->GetFunction()();
+			}
+		}
+	}
+
+	//初期ボタン
+	for (const auto& Btn : startBtnList_)
+	{
+		if (Btn->CheckColition(lpSceneMng.cursol_->GetPos()))
+		{
+			//入力チェック
+			if (mouseInput[Btn->GetCheckId()] && !oldmouseInput[Btn->GetCheckId()])
+			{
+				Btn->GetFunction()();
+			}
+		}
+	}
+
+	//ステージUIの移動
+	int cnt = 0;
+	for (auto& moveTime : moveTimes_)
+	{
+		moveTime = min(moveTime + lpSceneMng.GetDeltaTime(), MAP_SELECT_TOTAL_MOVE_TIME + MAP_SELECT_TOTAL_MOVE_TIME_INV * cnt);
+		cnt++;
+	}
+	if (MAP_SELECT_TOTAL_MOVE_TIME + MAP_SELECT_TOTAL_MOVE_TIME_INV * (cnt - 1) <= moveTimes_.back())
+	{
+		//次の画面へ
+		curScreen_ = CURSCREEN::STAGESELECT;
+	}
+}
+
+void SelectScene::DrawStartEndScreen(void)
+{
+	if (curScreen_ != CURSCREEN::STARTEND)
+	{
+		return;
+	}
+
+	auto curPos = lpSceneMng.cursol_->GetPos();
+	//マウスの値の取得
+	auto mouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::NOW);
+	auto oldmouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::OLD);
+
+	//背景描画
+	DrawModiGraph(0, 0,
+		lpSceneMng.GetViewArea().x_, 0,
+		lpSceneMng.GetViewArea().x_, lpSceneMng.GetViewArea().y_,
+		0, lpSceneMng.GetViewArea().y_, lpImageMng.GetID("Select")[0], true);
+
+	int posX = 0;
+	int cnt = 0;
+	for (const auto& defBtn : startBtnList_)
+	{
+		defBtn->Draw();
+		if (defBtn->CheckColition(lpSceneMng.cursol_->GetPos()))
+		{
+			//入力チェック
+			DrawGraph(0, defBtn->GetPos().y_, lpImageMng.GetID("MapSelectFrameLight")[0], true);
+
+			if (cnt == 1)
+			{
+				posX = AMO_MOVE;
+			}
+		}
+		cnt++;
+	}
+
+	DrawGraph(0, MAP_SELECT_POS_Y, lpImageMng.GetID("MapSelectFrameLight")[0], true);
+	DrawGraph(AMO_MOVE, MAP_SELECT_POS_Y, lpImageMng.GetID("MapSelectFrameText")[0], true);
+	DrawGraph(AMO_MOVE, MAP_SELECT_POS_Y, lpImageMng.GetID("Triangle")[0], true);
+
+	DrawGraph(posX, MAP_SELECT_POS_Y + MAP_SELECT_SIZE_Y + MAP_SELECT_INTERVAL, lpImageMng.GetID("ToTitleText")[0], true);
+
+	cnt = 0;
+	for (const auto& stage : stgSelectList_)
+	{
+		int tmpAmoMove = static_cast<int>(Easing::OutQuart(moveTimes_[cnt], MAP_SELECT_TOTAL_MOVE_TIME + MAP_SELECT_TOTAL_MOVE_TIME_INV * cnt) * MAP_SELECT_OFFSET_X + MAP_SELECT_OFFSET_INV_X * cnt);
+		DrawModiGraph(stgSelectPoses_[cnt].x_ - tmpAmoMove, stgSelectPoses_[cnt].y_,
+			stgSelectPoses_[cnt].x_ + STAGE_SIZE_X - tmpAmoMove, stgSelectPoses_[cnt].y_,
+			stgSelectPoses_[cnt].x_ + STAGE_SIZE_X - STAGE_SLOPE_SIZE_X - tmpAmoMove, stgSelectPoses_[cnt].y_ + STAGE_SIZE_Y,
+			stgSelectPoses_[cnt].x_ - STAGE_SLOPE_SIZE_X - tmpAmoMove, stgSelectPoses_[cnt].y_ + STAGE_SIZE_Y,
+			stage->GetModelID(), true);
+		cnt++;
+	}
+}
+
+void SelectScene::UpdateStgSelect(void)
+{
+	if (curScreen_ != CURSCREEN::STAGESELECT)
+	{
+		return;
+	}
+
+	auto curPos = lpSceneMng.cursol_->GetPos();
+	//マウスの値の取得
+	auto mouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::NOW);
+	auto oldmouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::OLD);
 
 	if (mouseInput[MouseInputID::RIGHT] && !oldmouseInput[MouseInputID::RIGHT])
 	{
-		stgSelectFlag_ = false;
+		curScreen_ = CURSCREEN::START;
 		std::fill(moveTimes_.begin(), moveTimes_.end(), 0.0);
-		moveEndFlag_ = false;
+		return;
 	}
 
-	//初期画面処理
-	for (auto& ui : defStageList_)
+	//初期画面
+	for (const auto& Btn : startBtnList_)
+	{
+		if (Btn->CheckColition(lpSceneMng.cursol_->GetPos()))
+		{
+			//入力チェック
+			if (mouseInput[Btn->GetCheckId()] && !oldmouseInput[Btn->GetCheckId()])
+			{
+				Btn->GetFunction()();
+			}
+		}
+	}
+
+	//ステージセレクト
+	for (auto& ui : stgSelectList_)
 	{
 		//カーソルチェック
 		if (ui->CheckColition(curPos))
@@ -422,7 +615,7 @@ UniqueScene SelectScene::UpDate(UniqueScene ownScene)
 			//入力チェック
 			if ((ui->CheckButtonInput(mouseInput[ui->GetCheckId()], oldmouseInput[ui->GetCheckId()])))
 			{
-				defScrEndFlag_ = true;
+				curScreen_ = CURSCREEN::MAP;
 
 				std::string mapname = ui->GetMapName();
 				mapName_ = mapname;
@@ -451,81 +644,11 @@ UniqueScene SelectScene::UpDate(UniqueScene ownScene)
 			}
 		}
 	}
-
-	return ownScene;
-}
-
-void SelectScene::Draw(void)
-{
-	DrawDefault();
-	DrawStgSelect();
-	DrawMagniMap();
-	DrawDownUI();
-	DrawMapScreen();
-	DrawComfirmUi();
-
-	//カーソルの描画
-	lpSceneMng.cursol_->Draw(false);
-}
-
-void SelectScene::DrawDefault(void)
-{
-	//初期画面
-	if (defScrEndFlag_)
-	{
-		return;
-	}
-
-	if (stgSelectFlag_)
-	{
-		return;
-	}
-
-	auto curPos = lpSceneMng.cursol_->GetPos();
-	//マウスの値の取得
-	auto mouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::NOW);
-	auto oldmouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::OLD);
-
-	//通常描画
-
-	//背景描画
-	DrawModiGraph(0, 0,
-		lpSceneMng.GetViewArea().x_, 0,
-		lpSceneMng.GetViewArea().x_, lpSceneMng.GetViewArea().y_,
-		0, lpSceneMng.GetViewArea().y_, lpImageMng.GetID("Select")[0], true);
-
-	int posX[2] = { 0,0 };
-	int cnt = 0;
-	for (const auto& defBtn : defBtnList_)
-	{
-		defBtn->Draw();
-		if (defBtn->CheckColition(lpSceneMng.cursol_->GetPos()))
-		{
-			//入力チェック
-			if (mouseInput[defBtn->GetCheckId()] && !oldmouseInput[defBtn->GetCheckId()])
-			{
-				defBtn->GetFunction()();
-			}
-			DrawGraph(0, defBtn->GetPos().y_, lpImageMng.GetID("MapSelectFrameLight")[0], true);
-			posX[cnt] = AMO_MOVE;
-		}
-		cnt++;
-	}
-	
-	DrawGraph(posX[0], MAP_SELECT_POS_Y, lpImageMng.GetID("MapSelectFrameText")[0], true);
-	DrawGraph(posX[0], MAP_SELECT_POS_Y, lpImageMng.GetID("Triangle")[0], true);
-
-	DrawGraph(posX[1], MAP_SELECT_POS_Y + MAP_SELECT_SIZE_Y + MAP_SELECT_INTERVAL, lpImageMng.GetID("ToTitleText")[0], true);
 }
 
 void SelectScene::DrawStgSelect(void)
 {
-	if (defScrEndFlag_)
-	{
-		return;
-	}
-
-	if (!stgSelectFlag_)
+	if (curScreen_ != CURSCREEN::STAGESELECT)
 	{
 		return;
 	}
@@ -543,16 +666,12 @@ void SelectScene::DrawStgSelect(void)
 
 	int posX = 0;
 	int cnt = 0;
-	for (const auto& defBtn : defBtnList_)
+	for (const auto& defBtn : startBtnList_)
 	{
 		defBtn->Draw();
 		if (defBtn->CheckColition(lpSceneMng.cursol_->GetPos()))
 		{
 			//入力チェック
-			if (mouseInput[defBtn->GetCheckId()] && !oldmouseInput[defBtn->GetCheckId()])
-			{
-				defBtn->GetFunction()();
-			}
 			DrawGraph(0, defBtn->GetPos().y_, lpImageMng.GetID("MapSelectFrameLight")[0], true);
 
 			if (cnt == 1)
@@ -566,191 +685,55 @@ void SelectScene::DrawStgSelect(void)
 	DrawGraph(0, MAP_SELECT_POS_Y, lpImageMng.GetID("MapSelectFrameLight")[0], true);
 	DrawGraph(AMO_MOVE, MAP_SELECT_POS_Y, lpImageMng.GetID("MapSelectFrameText")[0], true);
 	DrawGraph(AMO_MOVE, MAP_SELECT_POS_Y, lpImageMng.GetID("Triangle")[0], true);
-	
+
 	DrawGraph(posX, MAP_SELECT_POS_Y + MAP_SELECT_SIZE_Y + MAP_SELECT_INTERVAL, lpImageMng.GetID("ToTitleText")[0], true);
 
 	cnt = 0;
-	for (const auto& stage : defStageList_)
+	for (const auto& stage : stgSelectList_)
 	{
-		if (!moveEndFlag_)
+		stage->Draw();
+
+		std::string tmpMapName = stage->GetMapName();
+		tmpMapName.erase(0, tmpMapName.find_last_of("/") + 1);
+		tmpMapName.erase(tmpMapName.find_last_of("."), static_cast<int>(tmpMapName.size()));
+
+		if (stage->CheckColition(curPos))
 		{
-			int tmpAmoMove = static_cast<int>(Easing::OutQuart(moveTimes_[cnt], MAP_SELECT_TOTAL_MOVE_TIME + MAP_SELECT_TOTAL_MOVE_TIME_INV * cnt) * MAP_SELECT_OFFSET_X + MAP_SELECT_OFFSET_INV_X * cnt);
-			DrawModiGraph(stgSelectPoses_[cnt].x_ - tmpAmoMove, stgSelectPoses_[cnt].y_,
-				stgSelectPoses_[cnt].x_ + STAGE_SIZE_X - tmpAmoMove, stgSelectPoses_[cnt].y_,
-				stgSelectPoses_[cnt].x_ + STAGE_SIZE_X - STAGE_SLOPE_SIZE_X - tmpAmoMove, stgSelectPoses_[cnt].y_ + STAGE_SIZE_Y,
-				stgSelectPoses_[cnt].x_ - STAGE_SLOPE_SIZE_X - tmpAmoMove, stgSelectPoses_[cnt].y_ + STAGE_SIZE_Y,
-				stage->GetModelID(), true);
+			Vector2 stagePos = stage->GetPos();
+
+			DrawModiGraph(stagePos.x_, stagePos.y_,
+				stagePos.x_ + STAGE_SIZE_X, stagePos.y_,
+				stagePos.x_ + STAGE_SIZE_X - STAGE_SLOPE_SIZE_X, stagePos.y_ + STAGE_SIZE_Y,
+				stagePos.x_ - STAGE_SLOPE_SIZE_X, stagePos.y_ + STAGE_SIZE_Y,
+				lpImageMng.GetID("FrameLight")[0], true);
+
+			DrawModiGraph(0, 0,
+				STAGE_BG_SIZE_X, 0,
+				STAGE_BG_SIZE_X - STAGE_BG_SLOPE_SIZE_X, STAGE_BG_SIZE_Y,
+				-STAGE_BG_SLOPE_SIZE_X / 2, STAGE_BG_SIZE_Y, lpImageMng.GetID(tmpMapName)[0], true);
+			DrawGraph(0, STAGE_BG_SIZE_Y - STAGE_TEXT_OFFSET_Y, lpImageMng.GetID(tmpMapName + "Text")[0], true);
 		}
-		else
+
+		if (lpSceneMng.clearMap_[tmpMapName] == false)
 		{
-			stage->Draw();
-
-			std::string tmpMapName = stage->GetMapName();
-			tmpMapName.erase(0, tmpMapName.find_last_of("/") + 1);
-			tmpMapName.erase(tmpMapName.find_last_of("."), static_cast<int>(tmpMapName.size()));
-
-			if (stage->CheckColition(curPos))
-			{
-				Vector2 stagePos = stage->GetPos();
-
-				DrawModiGraph(stagePos.x_, stagePos.y_,
-					stagePos.x_ + STAGE_SIZE_X, stagePos.y_,
-					stagePos.x_ + STAGE_SIZE_X - STAGE_SLOPE_SIZE_X, stagePos.y_ + STAGE_SIZE_Y,
-					stagePos.x_ - STAGE_SLOPE_SIZE_X, stagePos.y_ + STAGE_SIZE_Y,
-					lpImageMng.GetID("FrameLight")[0], true);
-
-				DrawModiGraph(0, 0,
-					STAGE_BG_SIZE_X, 0,
-					STAGE_BG_SIZE_X - STAGE_BG_SLOPE_SIZE_X, STAGE_BG_SIZE_Y,
-					-STAGE_BG_SLOPE_SIZE_X / 2, STAGE_BG_SIZE_Y, lpImageMng.GetID(tmpMapName)[0], true);
-				DrawGraph(0, STAGE_BG_SIZE_Y - STAGE_TEXT_OFFSET_Y, lpImageMng.GetID(tmpMapName + "Text")[0], true);
-			}
-
-			if (lpSceneMng.clearMap_[tmpMapName] == false)
-			{
-				DrawGraph(stage->GetPos().x_, stage->GetPos().y_, lpImageMng.GetID("New")[0], true);
-			}
+			DrawGraph(stage->GetPos().x_, stage->GetPos().y_, lpImageMng.GetID("New")[0], true);
 		}
 		cnt++;
 	}
-
-	cnt = 0;
-	for (auto& moveTime : moveTimes_)
-	{
-		moveTime = min(moveTime + lpSceneMng.GetDeltaTime(), MAP_SELECT_TOTAL_MOVE_TIME + MAP_SELECT_TOTAL_MOVE_TIME_INV * cnt);
-		cnt++;
-	}
-	if (MAP_SELECT_TOTAL_MOVE_TIME + MAP_SELECT_TOTAL_MOVE_TIME_INV * (cnt - 1) <= moveTimes_.back())
-	{
-		moveEndFlag_ = true;
-	}
 }
 
-bool SelectScene::MagniMap(void)
+void SelectScene::UpdateDetailedMap(void)
 {
-	if (!defScrEndFlag_)
-	{
-		//マップを表示していない場合
-		return false;
-	}
-
-	if (comScrFlag_)
-	{
-		//最終確認画面に到達している場合
-		return false;
-	}
-
-	//マウスの値の取得
-	auto mouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::NOW);
-	auto oldmouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::OLD);
-
-	auto curPos = lpSceneMng.cursol_->GetPos();
-
-	if (0.0 < mapMagniTime_)
-	{
-		//マップを拡大、縮小している場合
-		mapMagniTime_ -= lpSceneMng.GetDeltaTime();
-	}
-
-	if (mapMagniUpFlag_)
-	{
-		//拡大画面の表示時
-
-		//右クリック時消滅
-		if (mouseInput[MouseInputID::RIGHT] && !oldmouseInput[MouseInputID::RIGHT])
-		{
-			//拡大状態を削除
-			mapMagniUpFlag_ = false;
-
-			//縮小状態にする
-			mapMagniTime_ = MAX_MAGNI_TIME;
-			mapMagniDownFlag_ = true;
-
-			return true;
-		}
-
-		//マップ表示画面のUI処理
-		for (auto& ui : mapMagniUiList_)
-		{
-			//カーソルチェック
-			if (ui->CheckColition(curPos))
-			{
-				//入力チェック
-				if ((ui->CheckButtonInput(mouseInput[ui->GetCheckId()], oldmouseInput[ui->GetCheckId()])))
-				{
-					//拡大状態を削除
-					mapMagniUpFlag_ = false;
-					
-					//縮小状態にする
-					mapMagniTime_ = MAX_MAGNI_TIME;
-					mapMagniDownFlag_ = true;
-
-					return true;
-				}
-			}
-		}
-		return true;
-	}
-
-	return false;
-}
-
-void SelectScene::DrawMagniMap(void)
-{
-	if (!mapMagniUpFlag_)
+	if (curScreen_ != CURSCREEN::MAP)
 	{
 		return;
 	}
-	//マップの拡大描画
-	auto maxMagniSize = lpSceneMng.GetViewArea() - Vector2(64, 64) - Vector2(MAP_POS_X + MAP_SIZE_X, MAP_POS_Y + MAP_SIZE_Y);
-
-	Vector2 magniSize;
-	magniSize.x_ = static_cast<int>(Easing::OUTEXP(MAX_MAGNI_TIME - mapMagniTime_, MAX_MAGNI_TIME) * maxMagniSize.x_);
-	magniSize.y_ = static_cast<int>(Easing::OUTEXP(MAX_MAGNI_TIME - mapMagniTime_, MAX_MAGNI_TIME) * maxMagniSize.y_);
-
-	//背景描画
-	DrawModiGraph(0, 0,
-		lpSceneMng.GetViewArea().x_, 0,
-		lpSceneMng.GetViewArea().x_, lpSceneMng.GetViewArea().y_,
-		0, lpSceneMng.GetViewArea().y_, backGroundGh_, true);
-
-	DrawModiGraph(MAP_POS_X, MAP_POS_Y, MAP_POS_X + MAP_SIZE_X + magniSize.x_, MAP_POS_Y, MAP_POS_X + MAP_SIZE_X + magniSize.x_, MAP_POS_Y + MAP_SIZE_Y + magniSize.y_, MAP_POS_X, MAP_POS_Y + MAP_SIZE_Y + magniSize.y_, mapGh_, true);
-
-	for (auto& magni : mapMagniUiList_)
-	{
-		magni->Draw();
-	}
-}
-
-bool SelectScene::DefMapUI(void)
-{
-	if (!defScrEndFlag_)
-	{
-		//マップを表示していない場合
-		return false;
-	}
-
-	if (comScrFlag_)
-	{
-		//最終確認画面に到達している場合
-		return false;
-	}
 
 	//マウスの値の取得
 	auto mouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::NOW);
 	auto oldmouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::OLD);
 
 	auto curPos = lpSceneMng.cursol_->GetPos();
-
-	if (0.0 < mapMagniTime_)
-	{
-		//マップを拡大、縮小している場合
-		mapMagniTime_ -= lpSceneMng.GetDeltaTime();
-	}
-	else
-	{
-		mapMagniDownFlag_ = false;
-	}
 
 	//マップ拡大
 	for (auto& ui : mapUiList_)
@@ -760,7 +743,7 @@ bool SelectScene::DefMapUI(void)
 			//クリックされたとき
 			if ((ui->CheckButtonInput(mouseInput[ui->GetCheckId()], oldmouseInput[ui->GetCheckId()])))
 			{
-				return ui->GetFunction()();
+				ui->GetFunction()();
 			}
 		}
 	}
@@ -768,50 +751,19 @@ bool SelectScene::DefMapUI(void)
 	//右クリック時消滅
 	if (mouseInput[MouseInputID::RIGHT] && !oldmouseInput[MouseInputID::RIGHT])
 	{
-		CancelUI();
+		curScreen_ = CURSCREEN::STAGESELECT;
 	}
 
-	return false;
+	return;
 }
 
-void SelectScene::DrawDownUI(void)
+void SelectScene::DrawDetailedMap(void)
 {
-	if (!mapMagniDownFlag_)
-	{
-		return;
-	}
-	//マップの縮小描画
-	auto maxMagniSize = lpSceneMng.GetViewArea() - Vector2(64, 64) - Vector2(MAP_POS_X + MAP_SIZE_X, MAP_POS_Y + MAP_SIZE_Y);
-
-	Vector2 magniSize;
-	magniSize.x_ = static_cast<int>(Easing::InExp(mapMagniTime_, MAX_MAGNI_TIME) * maxMagniSize.x_);
-	magniSize.y_ = static_cast<int>(Easing::InExp(mapMagniTime_, MAX_MAGNI_TIME) * maxMagniSize.y_);
-
-	//背景描画
-	DrawModiGraph(0, 0,
-		lpSceneMng.GetViewArea().x_, 0,
-		lpSceneMng.GetViewArea().x_, lpSceneMng.GetViewArea().y_,
-		0, lpSceneMng.GetViewArea().y_, backGroundGh_, true);
-
-	DrawModiGraph(MAP_POS_X, MAP_POS_Y, MAP_POS_X + MAP_SIZE_X + magniSize.x_, MAP_POS_Y, MAP_POS_X + MAP_SIZE_X + magniSize.x_, MAP_POS_Y + MAP_SIZE_Y + magniSize.y_, MAP_POS_X, MAP_POS_Y + MAP_SIZE_Y + magniSize.y_, mapGh_, true);
-}
-
-void SelectScene::DrawMapScreen(void)
-{
-	if (!defScrEndFlag_)
+	if (!((curScreen_ == CURSCREEN::MAP) || (curScreen_ == CURSCREEN::CONFIRM)))
 	{
 		return;
 	}
 
-	if (mapMagniUpFlag_)
-	{
-		return;
-	}
-
-	if (mapMagniDownFlag_)
-	{
-		return;
-	}
 	//通常描画
 	auto curPos = lpSceneMng.cursol_->GetPos();
 
@@ -836,19 +788,23 @@ void SelectScene::DrawMapScreen(void)
 	for (auto& ui : mapUiList_)
 	{
 		bool Flag = false;
+
 		if (ui->CheckColition(curPos))
 		{
 			Flag = true;
 		}
 
-		Flag = comScrFlag_ == true ? false : Flag;
+		if (curScreen_ == CURSCREEN::CONFIRM)
+		{
+			//確認画面の際は枠線は表示しない
+			Flag = false;
+		}
 
 		ui->Draw(Flag, 28);
 	}
 
 	//マップの描画
 	DrawModiGraph(MAP_POS_X, MAP_POS_Y, MAP_POS_X + MAP_SIZE_X, MAP_POS_Y, MAP_POS_X + MAP_SIZE_X, MAP_POS_Y + MAP_SIZE_Y, MAP_POS_X, MAP_POS_Y + MAP_SIZE_Y, mapGh_, true);
-
 	DrawGraph(MAP_POS_X + 232, MAP_POS_Y - 36, lpImageMng.GetID("mapUI")[0], true);
 
 	//フォントサイズの取得
@@ -905,11 +861,124 @@ void SelectScene::DrawMapScreen(void)
 	}
 }
 
-bool SelectScene::ComfirmUi(void)
+void SelectScene::UpdateMagniMap(void)
 {
-	if (!comScrFlag_)
+	if (curScreen_ != CURSCREEN::MAPMAGNI)
 	{
-		return false;
+		return;
+	}
+
+	//マウスの値の取得
+	auto mouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::NOW);
+	auto oldmouseInput = lpSceneMng.cursol_->GetMouseInput(InputType::OLD);
+
+	auto curPos = lpSceneMng.cursol_->GetPos();
+
+	if (0.0 < mapMagniTime_)
+	{
+		//マップを拡大、縮小している場合
+		mapMagniTime_ -= lpSceneMng.GetDeltaTime();
+	}
+
+	//拡大画面の表示時
+	//右クリック時消滅
+	if (mouseInput[MouseInputID::RIGHT] && !oldmouseInput[MouseInputID::RIGHT])
+	{
+		curScreen_ = CURSCREEN::MAP;
+		return;
+	}
+
+	//マップ表示画面のUI処理
+	for (auto& ui : mapMagniUiList_)
+	{
+		//カーソルチェック
+		if (ui->CheckColition(curPos))
+		{
+			//入力チェック
+			if ((ui->CheckButtonInput(mouseInput[ui->GetCheckId()], oldmouseInput[ui->GetCheckId()])))
+			{
+				//縮小状態にする
+				mapMagniTime_ = MAX_MAGNI_TIME;
+				curScreen_ = CURSCREEN::MAPSHRINK;
+				return;
+			}
+		}
+	}
+}
+
+void SelectScene::DrawMagniMap(void)
+{
+	if (curScreen_ != CURSCREEN::MAPMAGNI)
+	{
+		return;
+	}
+
+	//マップの拡大描画
+	auto maxMagniSize = lpSceneMng.GetViewArea() - Vector2(64, 64) - Vector2(MAP_POS_X + MAP_SIZE_X, MAP_POS_Y + MAP_SIZE_Y);
+
+	Vector2 magniSize;
+	magniSize.x_ = static_cast<int>(Easing::OUTEXP(MAX_MAGNI_TIME - mapMagniTime_, MAX_MAGNI_TIME) * maxMagniSize.x_);
+	magniSize.y_ = static_cast<int>(Easing::OUTEXP(MAX_MAGNI_TIME - mapMagniTime_, MAX_MAGNI_TIME) * maxMagniSize.y_);
+
+	//背景描画
+	DrawModiGraph(0, 0,
+		lpSceneMng.GetViewArea().x_, 0,
+		lpSceneMng.GetViewArea().x_, lpSceneMng.GetViewArea().y_,
+		0, lpSceneMng.GetViewArea().y_, backGroundGh_, true);
+
+	DrawModiGraph(MAP_POS_X, MAP_POS_Y, MAP_POS_X + MAP_SIZE_X + magniSize.x_, MAP_POS_Y, MAP_POS_X + MAP_SIZE_X + magniSize.x_, MAP_POS_Y + MAP_SIZE_Y + magniSize.y_, MAP_POS_X, MAP_POS_Y + MAP_SIZE_Y + magniSize.y_, mapGh_, true);
+
+	for (auto& magni : mapMagniUiList_)
+	{
+		magni->Draw();
+	}
+}
+
+void SelectScene::UpdateShrinkMap(void)
+{
+	if (curScreen_ != CURSCREEN::MAPSHRINK)
+	{
+		return;
+	}
+
+	if (mapMagniTime_ <= 0.0)
+	{
+		curScreen_ = CURSCREEN::MAP;
+		return;
+	}
+
+	mapMagniTime_ -= lpSceneMng.GetDeltaTime();
+}
+
+
+void SelectScene::DrawShrinkMap(void)
+{
+	if (curScreen_ != CURSCREEN::MAPSHRINK)
+	{
+		return;
+	}
+
+	//マップの縮小描画
+	auto maxMagniSize = lpSceneMng.GetViewArea() - Vector2(64, 64) - Vector2(MAP_POS_X + MAP_SIZE_X, MAP_POS_Y + MAP_SIZE_Y);
+
+	Vector2 magniSize;
+	magniSize.x_ = static_cast<int>(Easing::InExp(mapMagniTime_, MAX_MAGNI_TIME) * maxMagniSize.x_);
+	magniSize.y_ = static_cast<int>(Easing::InExp(mapMagniTime_, MAX_MAGNI_TIME) * maxMagniSize.y_);
+
+	//背景描画
+	DrawModiGraph(0, 0,
+		lpSceneMng.GetViewArea().x_, 0,
+		lpSceneMng.GetViewArea().x_, lpSceneMng.GetViewArea().y_,
+		0, lpSceneMng.GetViewArea().y_, backGroundGh_, true);
+
+	DrawModiGraph(MAP_POS_X, MAP_POS_Y, MAP_POS_X + MAP_SIZE_X + magniSize.x_, MAP_POS_Y, MAP_POS_X + MAP_SIZE_X + magniSize.x_, MAP_POS_Y + MAP_SIZE_Y + magniSize.y_, MAP_POS_X, MAP_POS_Y + MAP_SIZE_Y + magniSize.y_, mapGh_, true);
+}
+
+void SelectScene::UpdateConfirm(void)
+{
+	if (curScreen_ != CURSCREEN::CONFIRM)
+	{
+		return;
 	}
 
 	//マウスの値の取得
@@ -925,7 +994,8 @@ bool SelectScene::ComfirmUi(void)
 			//クリックされたとき
 			if ((ui->CheckButtonInput(mouseInput[ui->GetCheckId()], oldmouseInput[ui->GetCheckId()])))
 			{
-				return ui->GetFunction()();
+				ui->GetFunction()();
+				return;
 			}
 		}
 	}
@@ -933,18 +1003,20 @@ bool SelectScene::ComfirmUi(void)
 	//右クリック時確認状態を消す
 	if (mouseInput[MouseInputID::RIGHT] && !oldmouseInput[MouseInputID::RIGHT])
 	{
-		comScrFlag_ = false;
+		curScreen_ = CURSCREEN::MAP;
 	}
 
-	return false;
+	return;
 }
 
-void SelectScene::DrawComfirmUi(void)
+void SelectScene::DrawConfirm(void)
 {
-	if (!comScrFlag_)
+	if (curScreen_ != CURSCREEN::CONFIRM)
 	{
 		return;
 	}
+
+	DrawDetailedMap();
 
 	auto fontHandle = lpFontMng.GetFontSizeHandle(FontType::DEFAULT, SELECT_CONFIRM_FONT_SIZE);
 
@@ -989,9 +1061,8 @@ void SelectScene::LoadImageAll(void)
 	lpImageMng.GetID("Resource/image/UI/Select/map1Text.png", "map1Text");
 	lpImageMng.GetID("Resource/image/UI/Select/map2Text.png", "map2Text");
 	lpImageMng.GetID("Resource/image/UI/Select/map4Text.png", "map4Text");
-	
-	lpAudioMng.GetID("Resource/Audio/BGM/select.mp3", "select");
 
+	//非同期オン
 	SetUseASyncLoadFlag(true);
 
 	lpImageMng.GetID("Resource/image/Plant/knightplant.png", "Knightplant");
@@ -1066,16 +1137,11 @@ void SelectScene::LoadImageAll(void)
 		lpImageMng.SetID("Resource/image/effect/OneBackLight/" + std::to_string(i) + ".png", "OneBackLight");
 	}
 
-	lpAudioMng.GetID("Resource/Audio/SE/ClickStar.mp3", "ClickStar");
-	lpAudioMng.GetID("Resource/Audio/SE/EndLoading.mp3", "EndLoading");
-
 	//カウントダウン
 	lpImageMng.GetID("Resource/image/UI/CountDown/1.png", "Count1");
 	lpImageMng.GetID("Resource/image/UI/CountDown/2.png", "Count2");
 	lpImageMng.GetID("Resource/image/UI/CountDown/3.png", "Count3");
 	lpImageMng.GetID("Resource/image/UI/CountDown/go.png", "CountGo");
-	lpAudioMng.GetID("Resource/Audio/SE/drum0.mp3", "Drum0");
-	lpAudioMng.GetID("Resource/Audio/SE/drum1.mp3", "Drum1");
 
 	//ゲームシーン
 	lpImageMng.GetID("Resource/image/Unit/shadow.png", "Shadow");
@@ -1094,20 +1160,6 @@ void SelectScene::LoadImageAll(void)
 	{
 		lpImageMng.SetID("Resource/image/effect/Explosion/" + std::to_string(i) + ".png", "Explosion");
 	}
-
-	lpAudioMng.GetID("Resource/Audio/SE/Unit/KnightAtk.mp3", "KnightAtk");
-	lpAudioMng.GetID("Resource/Audio/SE/Unit/ArcherAtk.mp3", "ArcherAtk");
-	lpAudioMng.GetID("Resource/Audio/SE/Unit/WarriorAtk.mp3", "WarriorAtk");
-	lpAudioMng.GetID("Resource/Audio/SE/Unit/AttackedCore.mp3", "AttackedCore");
-	lpAudioMng.GetID("Resource/Audio/SE/Unit/AttackedPlant.mp3", "AttackedPlant");
-	lpAudioMng.GetID("Resource/Audio/SE/Unit/BrokenCore.mp3", "BrokenCore");
-	lpAudioMng.GetID("Resource/Audio/SE/Unit/BrokenPlant.mp3", "BrokenPlant");
-	lpAudioMng.GetID("Resource/Audio/SE/Unit/RepelArrow.mp3", "RepelArrow");
-	lpAudioMng.GetID("Resource/Audio/SE/DeployPlant.mp3", "DeployPlant");
-
-	lpAudioMng.GetID("Resource/Audio/SE/Explosion.mp3", "Explosion");
-	lpAudioMng.GetID("Resource/Audio/SE/Convergence.mp3", "Convergence");
-
 
 	SetUseASyncLoadFlag(false);
 }
@@ -1314,43 +1366,4 @@ int SelectScene::CaliculateId(ObjType objType)
 	}
 	return id;
 }
-
-bool SelectScene::MapDownUI(void)
-{
-	mapMagniUpFlag_ = true;
-	mapMagniTime_ = MAX_MAGNI_TIME;
-
-	if (mapMagniDownFlag_)
-	{
-		mapMagniDownFlag_ = false;
-	}
-
-	//0割り防止のため
-	mapMagniTime_ -= 0.00001;
-
-	return false;
-}
-
-bool SelectScene::CancelUI(void)
-{
-	defScrEndFlag_ = false;
-	return false;
-}
-
-bool SelectScene::SetoffUI(void)
-{
-	return true;
-}
-
-bool SelectScene::CancelUI2(void)
-{
-	comScrFlag_ = false;
-	return false;
-}
-
-bool SelectScene::GoUI(void)
-{
-	return true;
-}
-
 

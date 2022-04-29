@@ -63,9 +63,7 @@ void AudioMng::SetVolume(const std::string& key, int volume)
 void AudioMng::RingSound(const std::string& key, int dxPlayType)
 {
 	//if (!CheckSoundMem(audioMap_[key]))
-	{
-		PlaySoundMem(audioMap_[key], dxPlayType);
-	}
+	PlaySoundMem(audioMap_[key], dxPlayType);
 }
 
 void AudioMng::StopMusicAll(void)
