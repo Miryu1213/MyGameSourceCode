@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{1195A5BE-FA6D-425F-A453-C174FAFFA139}</ProjectGuid>
+    <RootNamespace>Project1</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Defele</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(DXLIB_DIR)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(DXLIB_DIR)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(DXLIB_DIR)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(DXLIB_DIR)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(DXLIB_DIR)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(DXLIB_DIR)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="common\AudioMng.cpp" />
+    <ClCompile Include="common\FontMng.cpp" />
+    <ClCompile Include="common\Vector3.cpp" />
+    <ClCompile Include="Scene\CountDownScene.cpp" />
+    <ClCompile Include="Scene\Obj\Plant\PlantFlag.cpp" />
+    <ClCompile Include="Scene\Obj\Plant\TrailLight.cpp" />
+    <ClCompile Include="Scene\Obj\SearchMapCtl.cpp" />
+    <ClCompile Include="Scene\Obj\Unit\ArcherArrow.cpp" />
+    <ClCompile Include="Scene\Obj\Unit\Smoke.cpp" />
+    <ClCompile Include="Scene\SystemObj\InputString.cpp" />
+    <ClCompile Include="Scene\SystemObj\Signal.cpp" />
+    <ClCompile Include="Scene\SystemObj\Tips.cpp" />
+    <ClCompile Include="Scene\SystemObj\WarSituationGraph.cpp" />
+    <ClCompile Include="Scene\TipsScene.cpp" />
+    <ClCompile Include="Scene\tmx\MapObject.cpp" />
+    <ClCompile Include="Scene\Transition\FadeOut.cpp" />
+    <ClCompile Include="Scene\TutorialScene.cpp" />
+    <ClCompile Include="Scene\UI\Circle.cpp" />
+    <ClCompile Include="Scene\Obj\RouteAlgorithm\AStarMng.cpp" />
+    <ClCompile Include="Scene\Obj\RouteAlgorithm\ANode.cpp" />
+    <ClCompile Include="Scene\Obj\RouteAlgorithm\Bresenham.cpp" />
+    <ClCompile Include="Scene\Deploy\Gimmick\BaseGimmick.cpp" />
+    <ClCompile Include="Scene\Deploy\DeployMng.cpp" />
+    <ClCompile Include="Scene\Deploy\Gimmick\Hurricane.cpp" />
+    <ClCompile Include="Scene\Obj\Plant\ArcherPlant.cpp" />
+    <ClCompile Include="Scene\Obj\Plant\KnightPlant.cpp" />
+    <ClCompile Include="Scene\Obj\RouteCtl.cpp" />
+    <ClCompile Include="Scene\Obj\Unit\Archer.cpp" />
+    <ClCompile Include="Scene\ResultScene.cpp" />
+    <ClCompile Include="Scene\SystemObj\Camera.cpp" />
+    <ClCompile Include="common\ImageMng.cpp" />
+    <ClCompile Include="Scene\Transition\FadeInOut.cpp" />
+    <ClCompile Include="Scene\Obj\Unit\Knight.cpp" />
+    <ClCompile Include="Scene\SystemObj\Cursol.cpp" />
+    <ClCompile Include="Input\Input.cpp" />
+    <ClCompile Include="Input\JoyPad.cpp" />
+    <ClCompile Include="Input\Mouse.cpp" />
+    <ClCompile Include="Input\KeyBoard.cpp" />
+    <ClCompile Include="Scene\Obj\Core.cpp" />
+    <ClCompile Include="Scene\Obj\Plant\Plant.cpp" />
+    <ClCompile Include="Scene\Obj\Obj.cpp" />
+    <ClCompile Include="Scene\GameScene.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Scene\BaseScene.cpp" />
+    <ClCompile Include="Scene\SceneMng.cpp" />
+    <ClCompile Include="Scene\Obj\Unit\Unit.cpp" />
+    <ClCompile Include="Scene\tmx\TmxObj.cpp" />
+    <ClCompile Include="Scene\SelectScene.cpp" />
+    <ClCompile Include="Scene\TitleScene.cpp" />
+    <ClCompile Include="Scene\Transition\Transition.cpp" />
+    <ClCompile Include="Scene\Obj\Unit\Warrior.cpp" />
+    <ClCompile Include="Scene\Obj\Plant\WarriorPlant.cpp" />
+    <ClCompile Include="Scene\UI\Box.cpp" />
+    <ClCompile Include="Scene\UI\Square.cpp" />
+    <ClCompile Include="Scene\UI\UI.cpp" />
+    <ClCompile Include="_debug\_DebugConOut.cpp" />
+    <ClCompile Include="_debug\_DebugDispOut.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="common\AudioMng.h" />
+    <ClInclude Include="common\csv.h" />
+    <ClInclude Include="common\Directing\MoveObject.h" />
+    <ClInclude Include="common\Easing.h" />
+    <ClInclude Include="common\FontMng.h" />
+    <ClInclude Include="common\Vector3.h" />
+    <ClInclude Include="Scene\CountDownScene.h" />
+    <ClInclude Include="Scene\Obj\AnimTbl.h" />
+    <ClInclude Include="Scene\Obj\Plant\AllPlantHeader.h" />
+    <ClInclude Include="Scene\Obj\Plant\PlantFlag.h" />
+    <ClInclude Include="Scene\Obj\Plant\TrailLight.h" />
+    <ClInclude Include="Scene\Obj\RouteAlgorithm\AStarMng.h" />
+    <ClInclude Include="common\Collision.h" />
+    <ClInclude Include="Scene\Obj\RouteAlgorithm\ANode.h" />
+    <ClInclude Include="Scene\Obj\RouteAlgorithm\Bresenham.h" />
+    <ClInclude Include="Scene\Deploy\Gimmick\BaseGimmick.h" />
+    <ClInclude Include="Scene\Deploy\DeployMng.h" />
+    <ClInclude Include="Scene\Deploy\Gimmick\GimmickType.h" />
+    <ClInclude Include="Scene\Deploy\Gimmick\Hurricane.h" />
+    <ClInclude Include="Scene\Obj\SearchMapCtl.h" />
+    <ClInclude Include="Scene\Obj\Type\ArmyType.h" />
+    <ClInclude Include="Scene\Obj\Type\GenerateType.h" />
+    <ClInclude Include="Scene\Obj\Type\ObjType.h" />
+    <ClInclude Include="Scene\Obj\Plant\ArcherPlant.h" />
+    <ClInclude Include="Scene\Obj\Plant\KnightPlant.h" />
+    <ClInclude Include="Scene\Obj\RouteCtl.h" />
+    <ClInclude Include="Scene\Obj\Type\State.h" />
+    <ClInclude Include="Scene\Obj\Unit\AllUnitHeader.h" />
+    <ClInclude Include="Scene\Obj\Unit\Archer.h" />
+    <ClInclude Include="Scene\Obj\Unit\ArcherArrow.h" />
+    <ClInclude Include="Scene\Obj\Unit\Smoke.h" />
+    <ClInclude Include="Scene\Obj\Unit\UnitDefState.h" />
+    <ClInclude Include="Scene\ResultScene.h" />
+    <ClInclude Include="Scene\SystemObj\Camera.h" />
+    <ClInclude Include="common\Deteals\Vector2.h" />
+    <ClInclude Include="common\ImageMng.h" />
+    <ClInclude Include="common\Vector2.h" />
+    <ClInclude Include="Scene\SystemObj\InputString.h" />
+    <ClInclude Include="Scene\SystemObj\Signal.h" />
+    <ClInclude Include="Scene\SystemObj\Tips.h" />
+    <ClInclude Include="Scene\SystemObj\WarSituationGraph.h" />
+    <ClInclude Include="Scene\TipsScene.h" />
+    <ClInclude Include="Scene\tmx\MapObject.h" />
+    <ClInclude Include="Scene\Transition\FadeInOut.h" />
+    <ClInclude Include="Scene\Obj\Unit\Knight.h" />
+    <ClInclude Include="Scene\SystemObj\Cursol.h" />
+    <ClInclude Include="Input\Input.h" />
+    <ClInclude Include="Input\InputID.h" />
+    <ClInclude Include="Input\JoyPad.h" />
+    <ClInclude Include="Input\Mouse.h" />
+    <ClInclude Include="Input\KeyBoard.h" />
+    <ClInclude Include="Input\MouseInputID.h" />
+    <ClInclude Include="Scene\Obj\Core.h" />
+    <ClInclude Include="Scene\Obj\Plant\Plant.h" />
+    <ClInclude Include="Scene\Obj\Obj.h" />
+    <ClInclude Include="Scene\GameScene.h" />
+    <ClInclude Include="Scene\BaseScene.h" />
+    <ClInclude Include="Scene\SceneMng.h" />
+    <ClInclude Include="Scene\Obj\Unit\Unit.h" />
+    <ClInclude Include="Scene\tmx\rapidxml.hpp" />
+    <ClInclude Include="Scene\tmx\rapidxml_iterators.hpp" />
+    <ClInclude Include="Scene\tmx\rapidxml_print.hpp" />
+    <ClInclude Include="Scene\tmx\rapidxml_utils.hpp" />
+    <ClInclude Include="Scene\tmx\TmxObj.h" />
+    <ClInclude Include="Scene\SelectScene.h" />
+    <ClInclude Include="Scene\TitleScene.h" />
+    <ClInclude Include="Scene\Transition\FadeOut.h" />
+    <ClInclude Include="Scene\Transition\Transition.h" />
+    <ClInclude Include="Scene\Obj\Unit\Warrior.h" />
+    <ClInclude Include="Scene\Obj\Plant\WarriorPlant.h" />
+    <ClInclude Include="Scene\TutorialScene.h" />
+    <ClInclude Include="Scene\UI\Box.h" />
+    <ClInclude Include="Scene\UI\Circle.h" />
+    <ClInclude Include="Scene\UI\Place.h" />
+    <ClInclude Include="Scene\UI\Square.h" />
+    <ClInclude Include="Scene\UI\UI.h" />
+    <ClInclude Include="_debug\_DebugConOut.h" />
+    <ClInclude Include="_debug\_DebugDispOut.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Scene\tmx\map0.tmx" />
+    <None Include="Scene\tmx\map1.tmx" />
+    <None Include="Scene\tmx\map2.tmx" />
+    <None Include="Scene\tmx\map4.tmx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="IconID.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
