@@ -15,6 +15,7 @@
 担当課所スクリプトはOptionフォルダ内の
 「Clear」「Gameover」「Map」「MyTurn」「Select」「Summary」「Title」「Currentselected」「SelectedMng」「Selecter」です。
 
+
 [フォルダ構造]
 SchlachtGuerre
 │  readme.txt
