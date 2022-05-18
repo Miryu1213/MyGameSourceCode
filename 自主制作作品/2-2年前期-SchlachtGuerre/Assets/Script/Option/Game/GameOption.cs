@@ -6,7 +6,7 @@ public class GameOption : MonoBehaviour
     {
         //選択できる機能一覧
         Atack,      //攻撃
-        Skill,      //スキル
+        //Skill,      //スキル
         Retreat     //撤退
     }
     private GameObject controllar;
@@ -46,7 +46,7 @@ public class GameOption : MonoBehaviour
         //    g1.Atkslt[i] = 30;
         //    g1.Atkslt2[i] = 30;
         //}
-            for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 10; i++)
         {
             Debug.Log(g2.CharIDList[i]);
             if (g2.CharIDList[i] != "str")
@@ -102,12 +102,12 @@ public class GameOption : MonoBehaviour
 
             return;
         }
-        if (nowpoint == (int)Function.Skill)
-        {
-            //スキル
-            Debug.Log("スキル");
-            return;
-        }
+        //if (nowpoint == (int)Function.Skill)
+        //{
+        //    //スキル
+        //    Debug.Log("スキル");
+        //    return;
+        //}
         if (nowpoint == (int)Function.Retreat)
         {
             //撤退

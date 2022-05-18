@@ -14,7 +14,7 @@ public class AdaptImgMng : MonoBehaviour
     const int MaxMapY = 7;
 
     //現在のグループ情報を取得し、対応した画像を張り付ける
-    const int MaxCharacter = 35;
+    const int MaxCharacter = 79;
 
     //雇用画面最大数
     //const int MaxEmp = 5;
@@ -913,7 +913,7 @@ public class AdaptImgMng : MonoBehaviour
                 //合計
                 lefttotal.text = gamemng.GetCharaDataSum((i - 4).ToString()).ToString();
             }
-            yield return new WaitForSeconds(0.07f);
+            yield return new WaitForSeconds(0.04f);
         }
         //rootObj.transform.Find("move").gameObject.SetActive(false);
         //rootObj.transform.Find("vs").gameObject.SetActive(true);

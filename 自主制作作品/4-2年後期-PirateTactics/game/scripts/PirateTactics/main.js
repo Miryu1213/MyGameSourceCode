@@ -1490,7 +1490,7 @@ window.onload = function(){
 
         updateState: function() {
             //次に使うステートを返します
-            var nextState = this;　//今回はまだ一つしかありませんので自分を
+            var nextState = this;
             return nextState;
         },
 

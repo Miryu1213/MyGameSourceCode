@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GroupMng : SingletonMonoBehaviour<GroupMng>
 {
-    const int MaxCharacter = 35;
+    const int MaxCharacter = 79;
     const int MaxGroupNumber = 5;       //グループ自体の最大数
     const int MaxNumInGroup = 5;        //グループ内の最大数
     const string InitArrayStr = "str";  //初期配列文字
@@ -48,13 +48,17 @@ public class GroupMng : SingletonMonoBehaviour<GroupMng>
         SetCharaToGroup("2", 0, "2");
         SetCharaToGroup("2", 0, "21");
         SetCharaToGroup("2", 0, "17");
+        SetCharaToGroup("2", 0, "62");
 
         SetCharaToGroup("3", 0, "3");
         SetCharaToGroup("3", 0, "12");
         SetCharaToGroup("3", 0, "13");
+        SetCharaToGroup("3", 0, "76");
 
         SetCharaToGroup("4", 0, "4");
         SetCharaToGroup("4", 0, "15");
+        SetCharaToGroup("4", 0, "43");
+        SetCharaToGroup("4", 0, "46");
 
         SetCharaToGroup("5", 0, "5");
         SetCharaToGroup("5", 0, "28");
@@ -62,10 +66,17 @@ public class GroupMng : SingletonMonoBehaviour<GroupMng>
 
         SetCharaToGroup("6", 0, "6");
         SetCharaToGroup("6", 0, "10");
+        SetCharaToGroup("6", 0, "58");
+        SetCharaToGroup("6", 0, "77");
+        SetCharaToGroup("6", 0, "78");
 
         SetCharaToGroup("7", 0, "7");
+        SetCharaToGroup("7", 0, "47");
+        SetCharaToGroup("7", 0, "56");
 
         SetCharaToGroup("8", 0, "8");
+        SetCharaToGroup("8", 0, "67");
+        SetCharaToGroup("8", 0, "68");
 
         SetCharaToGroup("9", 0, "9");
         SetCharaToGroup("9", 0, "27");

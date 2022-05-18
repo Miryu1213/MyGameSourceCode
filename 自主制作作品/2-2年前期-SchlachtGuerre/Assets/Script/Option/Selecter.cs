@@ -34,12 +34,12 @@ public class Selecter : MonoBehaviour
     private GameObject objpos;      //基本オブジェクトまとめ
 
     //例外処理用
-    private GameObject option;  //オプション画面
-    private GameObject employment;     //雇用
+    private GameObject option;        //オプション画面
+    private GameObject employment;    //雇用
     private GameObject empmaster;     //雇用
-    private GameObject rec;     //雇用成功時
-    private GameObject inv;     //防衛
-    private GameObject recon;   //配置
+    private GameObject rec;           //雇用成功時
+    private GameObject inv;           //防衛
+    private GameObject recon;         //配置
     private GameObject maru;
     private GameObject manual;
 
@@ -192,8 +192,8 @@ public class Selecter : MonoBehaviour
                     {
                         //初期画面
                         //省く場所(上から下へ数えるとき)
-                        List<int> pointList = new List<int> { 1, 6, 7 };
-                        CaliculatePosY(direction, pointList, 3);
+                        List<int> pointList = new List<int> { 2, 6 };
+                        CaliculatePosY(direction, pointList, 3, true);
                         if (!inv.GetComponent<Canvas>().enabled)
                         {
                             //上部テキストの切り替え
@@ -203,7 +203,7 @@ public class Selecter : MonoBehaviour
                     else
                     {
                         //省く場所(上から下へ数えるとき)
-                        List<int> pointlist = new List<int> { 1, 6, 7 };
+                        List<int> pointlist = new List<int> {  };
                         CaliculatePosY(direction, pointlist, 3);
                     }
                 }
@@ -285,7 +285,7 @@ public class Selecter : MonoBehaviour
         MoveSE.PlayOneShot(MoveSE.clip);
     }
 
-    private void CaliculatePosY(MoveDirection direction, List<int> pointlist, int amountPoint)
+    private void CaliculatePosY(MoveDirection direction, List<int> pointlist, int amountPoint, bool isMyturnScene = false)
     {
         var SeleMng = controllar.GetComponent<SelectedMng>();
 
@@ -301,26 +301,41 @@ public class Selecter : MonoBehaviour
                 if (MaxCnt.y != 0)
                 {
                     point.y = MaxCnt.y - 1;
-                    pos.y -= (AmountOfMovement.y * (MaxCnt.y - 1)) + AmountOfMovement.y * amountPoint;
+                    if (isMyturnScene)
+                    {
+                        pos.y -= (AmountOfMovement.y * (MaxCnt.y + 1)) + AmountOfMovement.y * amountPoint;
+                    }
+                    else 
+                    {
+                        pos.y -= (AmountOfMovement.y * (MaxCnt.y - 1)) + AmountOfMovement.y * amountPoint;
+                    }
                 }
             }
             else
             {
-                bool flag = false;
-                //一つ飛び
-                for (var i = 0; i < pointlist.Count; i++)
+                if (point.y == 4)
                 {
-                    if (pointlist[i] == point.y)
-                    {
-                        pos.y += AmountOfMovement.y * 2;
-                        flag = true;
-                        break;
-                    }
+                    //3つ飛び
+                    pos.y += AmountOfMovement.y * 4;
                 }
-                if (!flag)
+                else
                 {
-                    //通常
-                    pos.y += AmountOfMovement.y;
+                    bool flag = false;
+                    //一つ飛び
+                    for (var i = 0; i < pointlist.Count; i++)
+                    {
+                        if (pointlist[i] - 1 == point.y)
+                        {
+                            pos.y += AmountOfMovement.y * 2;
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (!flag)
+                    {
+                        //通常
+                        pos.y += AmountOfMovement.y;
+                    }
                 }
             }
             SeleMng.Setnowpoint(point);
@@ -336,30 +351,46 @@ public class Selecter : MonoBehaviour
             {
                 //下から上へ
                 point.y = 0;
-                pos.y += (AmountOfMovement.y * (MaxCnt.y - 1)) + AmountOfMovement.y * amountPoint;
+                if (isMyturnScene)
+                {
+                    pos.y += (AmountOfMovement.y * (MaxCnt.y + 1)) + AmountOfMovement.y * amountPoint;
+                }
+                else
+                {
+                    pos.y += (AmountOfMovement.y * (MaxCnt.y - 1)) + AmountOfMovement.y * amountPoint;
+                }
             }
             else
             {
-                bool flag = false;
-                for (var i = 0; i < pointlist.Count; i++)
+                if (point.y == 5)
                 {
-                    var PointI = pointlist[i] + 1;
-                    if (PointI == point.y)
-                    {
-                        pos.y -= AmountOfMovement.y * 2;
-                        flag = true;
-                        break;
-                    }
+                    //3つ飛び
+                    pos.y -= AmountOfMovement.y * 4;
                 }
-                if (!flag)
+                else
                 {
-                    //通常
-                    pos.y -= AmountOfMovement.y;
+                    bool flag = false;
+                    for (var i = 0; i < pointlist.Count; i++)
+                    {
+                        var PointI = pointlist[i];
+                        if (PointI == point.y)
+                        {
+                            pos.y -= AmountOfMovement.y * 2;
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (!flag)
+                    {
+                        //通常
+                        pos.y -= AmountOfMovement.y;
+                    }
                 }
             }
             SeleMng.Setnowpoint(point);
             MoveObject.GetComponent<RectTransform>().localPosition = pos;
         }
+        Debug.Log(SeleMng.Getnowpoint().y);
     }
 
     private void CaliculatePosX(MoveDirection direction)
@@ -476,31 +507,32 @@ public class Selecter : MonoBehaviour
 
                 return;
             }
-            if (nowpoint.y == (int)MyTurnOption.Function.Purchase)
-            {
-                //購入
-                textbarText.text = "武具の購入";
-                maru.GetComponent<MyTurnOption>().DeleteTraningNum();
+            //if (nowpoint.y == (int)MyTurnOption.Function.Purchase)
+            //{
+            //    //購入
+            //    textbarText.text = "武具の購入";
+            //    maru.GetComponent<MyTurnOption>().DeleteTraningNum();
 
-                //消費金の表示
-                adaptmng.AdaptLosMoney(0);
+            //    //消費金の表示
+            //    adaptmng.AdaptLosMoney(0);
 
-                return;
-            }
-            if (nowpoint.y == (int)MyTurnOption.Function.Equipment)
-            {
-                //装備
-                textbarText.text = "武具の装備";
+            //    return;
+            //}
+            //if (nowpoint.y == (int)MyTurnOption.Function.Equipment)
+            //{
+            //    //装備
+            //    textbarText.text = "武具の装備";
 
-                //消費金の表示
-                adaptmng.AdaptLosMoney(0);
+            //    //消費金の表示
+            //    adaptmng.AdaptLosMoney(0);
 
-                return;
-            }
+            //    return;
+            //}
             if (nowpoint.y == (int)MyTurnOption.Function.Expulsion)
             {
                 //配置
                 textbarText.text = "兵士の配置を変更";
+                maru.GetComponent<MyTurnOption>().DeleteTraningNum();
 
                 //消費金の表示
                 adaptmng.AdaptLosMoney(0);
@@ -510,7 +542,7 @@ public class Selecter : MonoBehaviour
             if (nowpoint.y == (int)MyTurnOption.Function.Option)
             {
                 //機能
-                textbarText.text = "セーブ/マニュアル/終了";
+                textbarText.text = "マニュアル/終了";
 
                 //消費金の表示
                 adaptmng.AdaptLosMoney(0);
@@ -538,12 +570,12 @@ public class Selecter : MonoBehaviour
             if (option.GetComponent<Canvas>().enabled)
             {
                 //機能画面の画面表示
-                if (nowpoint.y == (int)MyTurnOption.OptionMenu.Save)
-                {
-                    //セーブ
-                    textbarText.text = "現在の勢力情報を保存";
-                    return;
-                }
+                //if (nowpoint.y == (int)MyTurnOption.OptionMenu.Save)
+                //{
+                //    //セーブ
+                //    textbarText.text = "現在の勢力情報を保存";
+                //    return;
+                //}
                 if (nowpoint.y == (int)MyTurnOption.OptionMenu.Manual)
                 {
                     //マニュアル

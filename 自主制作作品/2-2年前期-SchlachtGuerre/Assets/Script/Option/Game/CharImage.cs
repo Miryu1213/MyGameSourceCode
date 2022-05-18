@@ -14,7 +14,8 @@ public class CharImage : MonoBehaviour
     int pe = 0;
 
     // 画像を動的に変えたいボタンの宣言
-    public Sprite[] Imgchar = new Sprite[34];
+    const int MaxCharacter = 79;
+    private Sprite[] Imgchar = new Sprite[MaxCharacter];
 
     SpriteState xState = new SpriteState();
 
@@ -25,6 +26,18 @@ public class CharImage : MonoBehaviour
 
     void Start()
     {
+        //画像のロード
+        for (int i = 0; i < MaxCharacter; i++)
+        {
+            string imgstr = "Character/" + i.ToString();
+            //Debug.Log(imgstr);
+            Imgchar[i] = Resources.Load<Sprite>(imgstr);
+            if (Imgchar[i] == null)
+            {
+                Debug.Log(i.ToString() + "番目の画像のロードに失敗");
+            }
+        }
+
         GameMain = GameObject.Find("GroupMng");
         GameMng g1 = GameMain.GetComponent<GameMng>();
         xState = xButton.spriteState;

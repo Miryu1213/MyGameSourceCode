@@ -13,8 +13,8 @@ public class MyTurnOption : MonoBehaviour
         Employment,            //雇用
         Reward,                //恩賞
         Training,              //訓練
-        Purchase,              //購入
-        Equipment,             //装備
+        //Purchase,              //購入
+        //Equipment,             //装備
         Expulsion,             //追放
         Option,                //機能
         End,                   //終了
@@ -24,7 +24,7 @@ public class MyTurnOption : MonoBehaviour
     public enum OptionMenu
     {
         //オプションメニュー
-        Save,                   //セーブ
+        //Save,                   //セーブ
         Manual,                 //マニュアル
         ToTitle                 //タイトルへ
     }
@@ -102,7 +102,7 @@ public class MyTurnOption : MonoBehaviour
     private Vector3 RecseleDefPos;                       //配置用セレクター初期位置
 
     Vector2Int OptionAmount = new Vector2Int(0, 32);    //オプション画面用移動量
-    Vector2Int OptionMaxCnt = new Vector2Int(0, 3);     //オプション画面用移動可能数
+    Vector2Int OptionMaxCnt = new Vector2Int(0, 2);     //オプション画面用移動可能数
     private GameObject Opselecter;                      //オプション画面用選択
     private Vector3 OpseleDefPos;                       //オプション用セレクター初期位置
 
@@ -507,33 +507,33 @@ public class MyTurnOption : MonoBehaviour
 
                 return;
             }
-            if (nowpoint == (int)Function.Purchase)
-            {
-                //購入
-                Debug.Log("購入");
-                bg_pos.GetComponent<Canvas>().enabled = false;
-                purchase.GetComponent<Canvas>().enabled = true;
-                nowScreen = purchase;
-                Debug.Log(nowScreen.name);
+            //if (nowpoint == (int)Function.Purchase)
+            //{
+            //    //購入
+            //    Debug.Log("購入");
+            //    bg_pos.GetComponent<Canvas>().enabled = false;
+            //    purchase.GetComponent<Canvas>().enabled = true;
+            //    nowScreen = purchase;
+            //    Debug.Log(nowScreen.name);
 
-                //Obj_Posをfalseに
-                objpos.GetComponent<Canvas>().enabled = false;
+            //    //Obj_Posをfalseに
+            //    objpos.GetComponent<Canvas>().enabled = false;
 
-                return;
-            }
-            if (nowpoint == (int)Function.Equipment)
-            {
-                //装備
-                Debug.Log("装備");
-                bg_pos.GetComponent<Canvas>().enabled = false;
-                equipment.GetComponent<Canvas>().enabled = true;
-                nowScreen = equipment;
+            //    return;
+            //}
+            //if (nowpoint == (int)Function.Equipment)
+            //{
+            //    //装備
+            //    Debug.Log("装備");
+            //    bg_pos.GetComponent<Canvas>().enabled = false;
+            //    equipment.GetComponent<Canvas>().enabled = true;
+            //    nowScreen = equipment;
 
-                //Obj_Posをfalseに
-                objpos.GetComponent<Canvas>().enabled = false;
+            //    //Obj_Posをfalseに
+            //    objpos.GetComponent<Canvas>().enabled = false;
 
-                return;
-            }
+            //    return;
+            //}
             if (nowpoint == (int)Function.Expulsion)
             {
                 //追放
@@ -735,11 +735,11 @@ public class MyTurnOption : MonoBehaviour
             if (Option.GetComponent<Canvas>().enabled)
             {
                 var nowpoint = controllar.GetComponent<SelectedMng>().Getnowpoint().y;
-                if (nowpoint == (int)OptionMenu.Save)
-                {
-                    //セーブ
-                    Debug.Log("セーブ");
-                }
+                //if (nowpoint == (int)OptionMenu.Save)
+                //{
+                //    //セーブ
+                //    Debug.Log("セーブ");
+                //}
                 if (nowpoint == (int)OptionMenu.Manual)
                 {
                     //マニュアル
@@ -1206,7 +1206,7 @@ public class MyTurnOption : MonoBehaviour
             if (gameObject.GetComponent<Canvas>().enabled)
             {
                 //上部表記の変更
-                textbarText.text = "セーブ/マニュアル/終了";
+                textbarText.text = "マニュアル/終了";
                 return;
             }
         }
